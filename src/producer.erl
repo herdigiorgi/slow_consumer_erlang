@@ -8,7 +8,9 @@ produce(N) ->
   produce(N - 1).
 
 log_something() ->
-  TestingOrder = erlang:unique_integer([monotonic]),
-  TestingOrderBinary = integer_to_binary(TestingOrder),
-  Message = << <<"Message: ">>/binary, TestingOrderBinary/binary>>,
+  Message = create_message_with_time(),
   logger:log(Message).
+
+create_message_with_time() ->
+  TimeBinary = integer_to_binary(os:system_time()),
+  <<<<"Message: ">>/binary, TimeBinary/binary>>.
