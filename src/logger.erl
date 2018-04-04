@@ -49,9 +49,9 @@ possibly_do_upload() ->
     no -> false;
     {yes, Logs} ->
       io:format("-- Starting upload --~n", []),
+      do_upload(Logs),
       lists:foldl(
         fun({Key, Element}, _) ->
-            do_upload(Key, Element),
             do_delete_locally(Key, Element)
         end, ignored, Logs),
       true
@@ -71,8 +71,14 @@ get_previous_logs() ->
                end),
   ets:select(?LOGGER_INPUT_LOGS_ETS, MatchExp).
 
-do_upload(Key, Element) ->
-  io:format("do_upload ~p: ~p~n", [Key, Element]).
+do_upload(Logs) ->
+  ListOfLogElements =
+    lists:foldl(fun({Key, Element}, Acc) ->
+                    BinaryKey = integer_to_binary(Key),
+                    [Acc, BinaryKey, <<" -> ">>, Element, <<"\n">>]
+                end, [], Logs),
+  ToUpload = list_to_binary(ListOfLogElements),
+  io:format("do_upload: ~n~s~n", [ToUpload]).
 
 do_delete_locally(Key, _Element) ->
   ets:delete(?LOGGER_INPUT_LOGS_ETS, Key).
