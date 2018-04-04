@@ -48,13 +48,8 @@ possibly_do_upload() ->
   case should_upload() of
     no -> false;
     {yes, Logs} ->
-      io:format("-- Starting upload --~n", []),
       do_upload(Logs),
-      lists:foldl(
-        fun({Key, Element}, _) ->
-            do_delete_locally(Key, Element)
-        end, ignored, Logs),
-      true
+      do_delete_locally(Logs)
   end.
 
 logs_size_in_bytes(Logs) ->
@@ -80,5 +75,8 @@ do_upload(Logs) ->
   ToUpload = list_to_binary(ListOfLogElements),
   io:format("do_upload: ~n~s~n", [ToUpload]).
 
-do_delete_locally(Key, _Element) ->
-  ets:delete(?LOGGER_INPUT_LOGS_ETS, Key).
+do_delete_locally(Logs) ->
+  lists:foldl(
+    fun({Key, _Element}, _) ->
+        ets:delete(?LOGGER_INPUT_LOGS_ETS, Key)
+    end, ignored, Logs).
